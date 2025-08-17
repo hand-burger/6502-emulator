@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Build artifacts
+build/
+obj/
+*.o
+*.out
+emu
