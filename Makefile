@@ -2,10 +2,10 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -std=c++11 -Iinclude -I/opt/homebrew/include/SDL2 -Wall
+CXXFLAGS = -std=c++11 -Iinclude $(shell pkg-config --cflags sdl2) -Wall
 
 # Linker flags (link-time only)
-LDFLAGS = -L/opt/homebrew/lib -lSDL2
+LDFLAGS = $(shell pkg-config --libs sdl2)
 
 # Executable name
 TARGET = emu
