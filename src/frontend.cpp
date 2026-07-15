@@ -40,9 +40,31 @@ void Frontend::shutdown() {
 }
 
 void Frontend::map_to_rgb(Byte v, Byte& r, Byte& g, Byte& b) {
-    if (v == 0) { r = g = b = 0; }
-    else if (v == 1) { r = g = b = 255; }
-    else { r = g = b = (Byte)(v * 16); }
+    // The standard easy6502 16-color palette; screen bytes use the low
+    // nibble as a color index, matching the ROMs written for it (the
+    // bundled snake game picks its apple color from $FE this way).
+    static const Byte palette[16][3] = {
+        {0x00, 0x00, 0x00}, // 0  black
+        {0xFF, 0xFF, 0xFF}, // 1  white
+        {0x88, 0x00, 0x00}, // 2  red
+        {0xAA, 0xFF, 0xEE}, // 3  cyan
+        {0xCC, 0x44, 0xCC}, // 4  purple
+        {0x00, 0xCC, 0x55}, // 5  green
+        {0x00, 0x00, 0xAA}, // 6  blue
+        {0xEE, 0xEE, 0x77}, // 7  yellow
+        {0xDD, 0x88, 0x55}, // 8  orange
+        {0x66, 0x44, 0x00}, // 9  brown
+        {0xFF, 0x77, 0x77}, // 10 light red
+        {0x33, 0x33, 0x33}, // 11 dark grey
+        {0x77, 0x77, 0x77}, // 12 grey
+        {0xAA, 0xFF, 0x66}, // 13 light green
+        {0x00, 0x88, 0xFF}, // 14 light blue
+        {0xBB, 0xBB, 0xBB}  // 15 light grey
+    };
+    const Byte* c = palette[v & 0x0F];
+    r = c[0];
+    g = c[1];
+    b = c[2];
 }
 
 void Frontend::draw_if_changed(const Byte* screen) {
