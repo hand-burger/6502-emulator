@@ -28,6 +28,14 @@ make
 
 This will create an executable file named `emu` in the `build/bin` directory.
 
+### Testing
+
+To build and run the CPU unit tests (no SDL required), run:
+
+```bash
+make test
+```
+
 ### Running
 
 To run the emulator with the default snake game, run the following command:

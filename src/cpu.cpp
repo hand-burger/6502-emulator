@@ -328,7 +328,9 @@ void cpu::initInstructionTable() {
     instructionTable[0x78] = [this](){ setFlag(I, true); };
 
     // System
-    instructionTable[0x00] = [this](){ PC++; write(0x0100 + SP--, (PC >> 8) & 0xFF); write(0x0100 + SP--, PC & 0xFF); write(0x0100 + SP--, P | B | U); setFlag(B, true); PC = (read(0xFFFE) | (read(0xFFFF) << 8)); };
+    // BRK: B is only set on the pushed copy of P, not the live register,
+    // and the interrupt disable flag is set after pushing state.
+    instructionTable[0x00] = [this](){ PC++; write(0x0100 + SP--, (PC >> 8) & 0xFF); write(0x0100 + SP--, PC & 0xFF); write(0x0100 + SP--, P | B | U); setFlag(I, true); PC = (read(0xFFFE) | (read(0xFFFF) << 8)); };
     instructionTable[0xEA] = [](){};
     instructionTable[0x40] = [this](){ P = read(0x0100 + ++SP); P &= ~B; P |= U; Byte lo = read(0x0100 + ++SP); Byte hi = read(0x0100 + ++SP); PC = (lo | (hi << 8)); };
 }

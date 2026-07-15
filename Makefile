@@ -42,8 +42,17 @@ $(OBJDIR):
 $(BINDIR):
 	@mkdir -p $(BINDIR)
 
+# Build and run the CPU unit tests (no SDL required)
+TESTBIN = $(BINDIR)/cpu_tests
+
+test: $(TESTBIN)
+	./$(TESTBIN)
+
+$(TESTBIN): tests/cpu_tests.cpp $(OBJDIR)/cpu.o | $(BINDIR)
+	$(CXX) $(CXXFLAGS) -o $@ tests/cpu_tests.cpp $(OBJDIR)/cpu.o
+
 # Clean up build artifacts
 clean:
 	rm -rf build
 
-.PHONY: all clean
+.PHONY: all clean test
