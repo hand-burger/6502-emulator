@@ -1,13 +1,37 @@
 #include "cpu.h"
 #include "frontend.h"
+#include <fstream>
 #include <iostream>
 #include <vector>
 #include <random>
 #include <string>
 
-int main(int argc, char** argv) {
-    std::string romPath = (argc >= 2 ? argv[1] : std::string("snake.bin"));
+// Reads a raw ROM image from disk. Returns an empty vector on failure.
+static std::vector<Byte> loadRom(const std::string& path) {
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    if (!file) {
+        std::cerr << "Failed to open ROM file: " << path << std::endl;
+        return {};
+    }
+    std::streamsize size = file.tellg();
+    // The program is loaded at 0x0600 and must not run into the reset
+    // vectors at the top of memory.
+    const std::streamsize maxSize = 0xFFFC - 0x0600;
+    if (size <= 0 || size > maxSize) {
+        std::cerr << "ROM file " << path << " has invalid size " << size
+                  << " (must be between 1 and " << maxSize << " bytes)" << std::endl;
+        return {};
+    }
+    file.seekg(0, std::ios::beg);
+    std::vector<Byte> rom(static_cast<size_t>(size));
+    if (!file.read(reinterpret_cast<char*>(rom.data()), size)) {
+        std::cerr << "Failed to read ROM file: " << path << std::endl;
+        return {};
+    }
+    return rom;
+}
 
+int main(int argc, char** argv) {
     std::vector<Byte> snake_game = {
         0x20, 0x06, 0x06, 0x20, 0x38, 0x06, 0x20, 0x0d, 0x06, 0x20, 0x2a, 0x06, 0x60, 0xa9, 0x02, 0x85,
         0x02, 0xa9, 0x04, 0x85, 0x03, 0xa9, 0x11, 0x85, 0x10, 0xa9, 0x10, 0x85, 0x12, 0xa9, 0x0f, 0x85,
@@ -31,8 +55,14 @@ int main(int argc, char** argv) {
         0xea, 0xca, 0xd0, 0xfb, 0x60
     };
 
+    std::vector<Byte> program = snake_game;
+    if (argc >= 2) {
+        program = loadRom(argv[1]);
+        if (program.empty()) return 1;
+    }
+
     cpu cpu;
-    cpu.loadAt0600AndSetReset(snake_game);
+    cpu.loadAt0600AndSetReset(program);
     cpu.reset();
 
     Frontend fe;
